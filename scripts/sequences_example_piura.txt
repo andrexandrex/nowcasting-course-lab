@@ -1,0 +1,18 @@
+# Lista de secuencias para run_inference_from_list.py
+# -----------------------------------------------------
+# - Una ruta .npy por linea. Cada archivo debe ser (25, 128, 128) en mm/h.
+# - Las lineas que empiezan con # se ignoran. Las lineas vacias tambien.
+# - Las rutas relativas se resuelven desde donde ejecutas el comando
+#   (ejecuta desde la raiz del repo: nowcasting_course_lab/).
+#
+# Uso:
+#   python scripts/run_inference_from_list.py scripts/sequences_example.txt --stage all
+#
+# Puedes copiar este archivo y poner tus propias rutas (incluso absolutas).
+
+/home/henryjuarez/code_andre_sophy/curso_hf/ideam-nowcasting-samples/piura_data/piura_furuno_rr_seq_20250326_0100_len25_stride12.npy
+
+/home/henryjuarez/code_andre_sophy/curso_hf/ideam-nowcasting-samples/piura_data/piura_furuno_rr_seq_20250327_0600_len25_stride12.npy
+
+
+/home/henryjuarez/code_andre_sophy/curso_hf/ideam-nowcasting-samples/piura_data/piura_furuno_rr_seq_20250329_0900_len25_stride12.npy

@@ -16,6 +16,12 @@ SAMPLE_FILES = [
     "guaviare_seq_20240329_0800_patch_03_rain_rate.npy",
 ]
 
+SAMPLE_FILES_piura = [
+    "piura_furuno_rr_seq_20250326_0100_len25_stride12.npy",
+    "piura_furuno_rr_seq_20250327_0600_len25_stride12.npy",
+    "piura_furuno_rr_seq_20250329_0900_len25_stride12.npy",
+]
+
 INPUT_FRAMES = 13
 PRED_FRAMES = 12
 EXPECTED_SAMPLE_SHAPE = (25, 128, 128)
