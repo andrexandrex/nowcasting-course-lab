@@ -22,6 +22,11 @@ nowcasting_course_lab/
 │   ├── model_inference.py
 │   ├── palette.py
 │   └── plotting.py
+├── cascast_vendor/          # dependencias minimas de CasCast, ya incluidas en el repo
+│   ├── configs/sevir_used/
+│   ├── models/
+│   ├── networks/
+│   └── utils/
 ├── earthformer_training_lab/
 │   ├── architectures/
 │   │   └── earthformer_xy.py
@@ -90,18 +95,27 @@ Este ambiente es liviano y sirve para visualizacion, persistencia y metricas. No
 
 ## 2b. Extras opcionales para inferencia
 
-No necesitas crear otro ambiente. Usa el mismo `nowcasting-course-lab` e instala extras solo si vas a correr EarthFormer/CasCast:
+No necesitas crear otro ambiente. Usa el mismo `nowcasting-course-lab` e instala extras solo si vas a correr EarthFormer/CasCast.
+
+> **IMPORTANTE — instala PyTorch con `conda`, no con `pip`.**
+> La version de pip de PyTorch genera un error silencioso al importar
+> (`undefined symbol: iJIT_NotifyEvent`) que el curso reporta como
+> "PyTorch no esta instalado en este ambiente". Si ya corriste
+> `pip install torch` antes, desinstalalo primero:
+> ```bash
+> pip uninstall -y torch torchvision
+> ```
 
 ```bash
 conda activate nowcasting-course-lab
 
-# Opcion A: PyTorch con CUDA 11.8, recomendado si tienes NVIDIA.
-conda install -c pytorch -c nvidia pytorch=2.0.1 torchvision pytorch-cuda=11.8
+# Opcion A: PyTorch con CUDA 12.x, recomendado si tienes GPU NVIDIA.
+conda install -c pytorch -c nvidia pytorch torchvision pytorch-cuda=12.1
 
-# Opcion B: PyTorch CPU-only, mas lento pero valido para pruebas/inferencia pequena.
-# conda install -c pytorch pytorch=2.0.1 torchvision cpuonly
+# Opcion B: PyTorch CPU-only, mas lento pero funciona sin GPU.
+# conda install -c pytorch pytorch torchvision cpuonly
 
-# Paquetes extra usados por CasCast.
+# Paquetes extra para la inferencia (einops, timm).
 pip install -r inference_requirements.txt
 ```
 
@@ -109,6 +123,12 @@ Si ya instalaste otro kernel por accidente, no pasa nada. Puedes seguir usando `
 
 ```bash
 python -m ipykernel install --user --name nowcasting-course-lab --display-name "Nowcasting Course Lab"
+```
+
+Para verificar que PyTorch quedo bien instalado:
+
+```bash
+python -c "import torch; print(torch.__version__, '| CUDA:', torch.cuda.is_available())"
 ```
 
 ### Forma recomendada: una lista de secuencias en un `.txt`
@@ -384,8 +404,13 @@ python scripts/download_assets.py --checkpoints
 ```
 
 Quedaran en `checkpoints/ef_ideam_final/` con los nombres `ef_ckpt.pth`, `ae_ckpt.pth` y
-`diff_ckpt.pth`, justo donde los espera `config/model_demo_paths.yaml`. Con eso, la inferencia de
-los notebooks 01 y 03 (via `scripts/run_inference_from_list.py`) ya los encuentra sin configurar nada.
+`diff_ckpt.pth`, justo donde los espera `config/model_demo_paths.yaml`. Con eso, la inferencia ya
+los encuentra sin configurar nada mas.
+
+> **El repo es autocontenido.** La carpeta `cascast_vendor/` ya incluye todas las
+> dependencias de codigo necesarias para correr EarthFormer. No necesitas clonar
+> ningun repositorio externo de CasCast. Solo necesitas: este repo + los checkpoints
+> descargados con el comando de arriba.
 
 La configuracion del demo avanzado esta en:
 
@@ -393,15 +418,14 @@ La configuracion del demo avanzado esta en:
 config/model_demo_paths.yaml
 ```
 
-Ahi se definen el repo de CasCast, las rutas de los checkpoints (`ef_ckpt.pth`, `ae_ckpt.pth`,
-`diff_ckpt.pth`) y el `scale_factor` latente que usa CasCast. Ajusta esas rutas si guardas los
-checkpoints en otro lugar.
+Ahi se definen las rutas de los checkpoints (`ef_ckpt.pth`, `ae_ckpt.pth`, `diff_ckpt.pth`) y el
+`scale_factor` latente que usa CasCast. Ajusta esas rutas si guardas los checkpoints en otro lugar.
 
 La inferencia se corre siempre desde los scripts (no desde el notebook), para que sea
 reproducible:
 
 ```bash
-python scripts/run_inference_from_list.py scripts/sequences_example.txt --stage all --device auto
+python scripts/run_inference_from_list.py scripts/sequences_example.txt --stage earthformer --device auto
 python scripts/evaluate_predictions.py --sample all
 ```
 
