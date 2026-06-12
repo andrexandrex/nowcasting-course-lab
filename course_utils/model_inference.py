@@ -157,8 +157,6 @@ def _patch_huggingface_hub_for_vendored_diffusers() -> None:
                 "El demo del curso solo soporta inferencia local con checkpoints ya descargados."
             )
 
-        huggingface_hub.cached_download = cached_download
-
 
 def _build_model_from_config(config_file: Path, checkpoint_paths: dict[str, Path], model_type: str, device: str):
     import torch

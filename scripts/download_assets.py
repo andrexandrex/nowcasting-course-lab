@@ -7,17 +7,16 @@ Datos (dataset andrexandrex322/ideam-nowcasting-samples):
   piura_data/     -> data/piura_data/     (casos Piura, tarea 02)
   sophy_data/     -> data/sophy_data/     (casos Sophy, tarea 02)
 
-Checkpoints (modelo andrexandrex322/ideam-nowcasting-earthformer-cascast):
-  checkpoint_epoch_ef.pth     -> checkpoints/ef_ideam_final/ef_ckpt.pth
-  checkpoint_latest_ae.pth    -> checkpoints/ef_ideam_final/ae_ckpt.pth
-  checkpoint_latest_diff.pth  -> checkpoints/ef_ideam_final/diff_ckpt.pth
+Checkpoints (modelo andrexandrex322/ideam-nowcasting-earthformer-cascast/ef_ideam_final/):
+  ef_ckpt.pth     -> checkpoints/ef_ideam_final/ef_ckpt.pth      (EarthFormer determinista)
+  ae_ckpt.pth     -> checkpoints/ef_ideam_final/ae_ckpt.pth      (Autoencoder para CasCast)
+  diff_ckpt.pth   -> checkpoints/ef_ideam_final/diff_ckpt.pth    (CasCast difusión)
 
 Ejemplos:
   python scripts/download_assets.py                  # solo las 5 muestras del curso
-  python scripts/download_assets.py --checkpoints    # muestras + checkpoints (4.7 GB)
-  python scripts/download_assets.py --piura --sophy   # datos de la tarea 02
+  python scripts/download_assets.py --checkpoints    # muestras + checkpoints (~4.7 GB)
+  python scripts/download_assets.py --piura --sophy  # datos de la tarea 02
   python scripts/download_assets.py --all            # todo (datos + checkpoints, pesado)
-
 Sugerencia: lanza la descarga de checkpoints en una terminal mientras instalas las
 librerias de inferencia en otra; el .pth de difusion pesa varios GB.
 """
@@ -50,9 +49,18 @@ DATA_FOLDERS = {
     "sophy": "sophy_data",
 }
 
-# Subcarpeta y mapeo de nombres HF -> nombres que esperan los scripts/config.
+# Subcarpeta donde están los checkpoints en el repositorio HF
 CHECKPOINT_SUBDIR = "ef_ideam_final"
+
+# Mapeo: nombre en HF -> nombre local (ya están correctos, no necesitan renombrado)
 CHECKPOINT_MAP = {
+    "ef_ckpt.pth": "ef_ckpt.pth",      # EarthFormer determinista
+    "ae_ckpt.pth": "ae_ckpt.pth",      # Autoencoder para CasCast
+    "diff_ckpt.pth": "diff_ckpt.pth",  # CasCast difusión
+}
+
+# Nombres alternativos que algunos scripts podrían esperar (crear enlaces simbólicos)
+ALTERNATIVE_NAMES = {
     "checkpoint_epoch_ef.pth": "ef_ckpt.pth",
     "checkpoint_latest_ae.pth": "ae_ckpt.pth",
     "checkpoint_latest_diff.pth": "diff_ckpt.pth",
@@ -92,8 +100,26 @@ def download_samples(root: Path) -> None:
     print(f"Validadas {len(SAMPLE_FILES)} muestras del curso en {dest}")
 
 
+def create_symlinks(output_dir: Path) -> None:
+    """Crea enlaces simbólicos para nombres alternativos que otros scripts esperan."""
+    for alt_name, target_name in ALTERNATIVE_NAMES.items():
+        target_path = output_dir / target_name
+        alt_path = output_dir / alt_name
+        
+        if not target_path.exists():
+            print(f"  Advertencia: {target_name} no existe, no se crea enlace {alt_name}")
+            continue
+        
+        if alt_path.exists():
+            # Si ya existe y es un enlace o archivo, lo removemos
+            alt_path.unlink()
+        
+        alt_path.symlink_to(target_name)
+        print(f"  Enlace creado: {alt_name} -> {target_name}")
+
+
 def download_checkpoints(root: Path) -> None:
-    """Descarga los checkpoints y los renombra en checkpoints/ef_ideam_final/."""
+    """Descarga los checkpoints y crea enlaces para nombres alternativos."""
     output_dir = root / "checkpoints" / CHECKPOINT_SUBDIR
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -101,12 +127,26 @@ def download_checkpoints(root: Path) -> None:
     for hf_name, local_name in CHECKPOINT_MAP.items():
         destination = output_dir / local_name
         if destination.exists():
-            print(f"  ya existe, se omite: {local_name}")
-            continue
-        downloaded = hf_hub_download(repo_id=MODEL_REPO_ID, filename=hf_name)
+            # Verificar que el archivo no esté vacío
+            if destination.stat().st_size > 0:
+                print(f"  ya existe, se omite: {local_name} ({destination.stat().st_size / 1e9:.2f} GB)")
+                continue
+            else:
+                print(f"  archivo vacío encontrado, re-descargando: {local_name}")
+                destination.unlink()
+        
+        downloaded = hf_hub_download(
+            repo_id=MODEL_REPO_ID, 
+            filename=hf_name,
+            subfolder=CHECKPOINT_SUBDIR  # ¡Importante! Buscar en la subcarpeta correcta
+        )
         shutil.copy2(downloaded, destination)
-        print(f"  {hf_name} -> {destination}")
+        size_mb = destination.stat().st_size / (1024 * 1024)
+        print(f"  {hf_name} -> {destination} ({size_mb:.1f} MB)")
 
+    # Crear enlaces simbólicos para nombres alternativos
+    print("Creando enlaces para nombres alternativos...")
+    create_symlinks(output_dir)
     print(f"Listo: checkpoints en {output_dir}")
 
 
@@ -126,6 +166,9 @@ def main() -> None:
     args = parse_args()
     root = ROOT
 
+    print(f"Directorio raíz: {root}")
+    print("-" * 50)
+
     # Las 5 muestras del curso siempre se descargan (son el minimo para 01 y 03).
     download_samples(root)
 
@@ -138,7 +181,9 @@ def main() -> None:
     if args.all or args.checkpoints:
         download_checkpoints(root)
 
-    print("\nDescarga completa.")
+    print("\n" + "=" * 50)
+    print("✅ Descarga completa.")
+    print("=" * 50)
 
 
 if __name__ == "__main__":
