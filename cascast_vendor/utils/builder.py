@@ -20,6 +20,9 @@ class ConfigBuilder:
         elif model_type == 'autoencoder_kl_gan_model':
             from models.autoencoder_kl_gan_model import autoencoder_kl_gan_model
             return autoencoder_kl_gan_model(self.logger, **params)
+        elif model_type == 'latent_diffusion_model':
+            from models.latent_diffusion_model import latent_diffusion_model
+            return latent_diffusion_model(self.logger, **params)
         elif model_type == 'latent_diffusion_model_eval':
             from models.latent_diffusion_model_eval import latent_diffusion_model_eval
             return latent_diffusion_model_eval(self.logger, **params)
