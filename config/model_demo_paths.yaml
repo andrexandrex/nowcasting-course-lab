@@ -1,4 +1,7 @@
-cascast_repo: ../codigo_github/Repo_CasCast
+# cascast_vendor/ contiene las dependencias minimas de CasCast necesarias para
+# correr EarthFormer sin necesitar el repo externo completo.
+# Si tienes el repo CasCast completo en otro lugar, cambia esta ruta.
+cascast_repo: cascast_vendor
 # Checkpoints descargados con: python scripts/download_assets.py --checkpoints
 checkpoints:
   earthformer: checkpoints/ef_ideam_final/ef_ckpt.pth

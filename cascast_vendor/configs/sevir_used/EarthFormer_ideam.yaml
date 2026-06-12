@@ -1,0 +1,31 @@
+# Stripped inference-only config derived from the original CasCast
+# configs/sevir_used/EarthFormer_ideam.yaml.
+# Dataset, sampler, trainer, optimizer and lr_scheduler sections are omitted
+# because this file is only used to build the model for inference.
+
+model:
+  type: non_ar_model
+  params:
+    sub_model:
+      EarthFormer_xy:
+        in_len: 13
+        out_len: 12
+        height: 128
+        width: 128
+        initial_downsample_stack_conv_num_layers: 3
+        initial_downsample_stack_conv_dim_list: [16, 64, 128]
+        initial_downsample_stack_conv_downscale_list: [2, 2, 2]
+        initial_downsample_stack_conv_num_conv_list: [2, 2, 2]
+
+    save_best: MSE
+    use_ceph: false
+    metrics_type: "None"
+    data_type: fp32
+
+    extra_params:
+      loss_type: WeightedMSELoss
+      enabled_amp: false
+      log_step: 20
+
+    visualizer:
+      visualizer_type: null
