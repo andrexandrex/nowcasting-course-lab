@@ -1,12 +1,13 @@
 name: First Workflow
-on: workflow_dispatch #manually trigger this workflow
+on: 
+  workflow_dispatch:
 jobs:
   basic:
-  runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
   steps:
-    -name: Print greeting
-    run: echo "Hello World"
-    -name: Print
-    run: echo "DOne " 
+    - name: Print greeting
+      run: echo "Hello World"
+    - name: Print ioi
+      run: echo "DOne" 
   
     
