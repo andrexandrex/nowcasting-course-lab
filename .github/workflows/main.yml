@@ -4,10 +4,10 @@ on:
 jobs:
   basic:
     runs-on: ubuntu-latest
-  steps:
-    - name: Print greeting
-      run: echo "Hello World"
-    - name: Print ioi
-      run: echo "DOne" 
-  
+    steps:
+      - name: Print greeting
+        run: echo "Hello World"
+      - name: Print ioi
+        run: echo "DOne" 
+    
     
